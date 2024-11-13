@@ -1,6 +1,6 @@
 import numpy as np
 
-def vehicle_dynamics(state, t, m, Iz, lf, lr, Pf, Pr, delta):
+def vehicle_dynamics(state, t, m, Iz, lf, lr, Pf, Pr, Fi, delta):
     x, y, phi, vx, vy, omega = state
 
     # Slip angles calculation
@@ -15,7 +15,7 @@ def vehicle_dynamics(state, t, m, Iz, lf, lr, Pf, Pr, delta):
     dx = vx * np.cos(phi) - vy * np.sin(phi)
     dy = vx * np.sin(phi) + vy * np.cos(phi)
     dphi = omega
-    dvx = (1 / m) * (-Ff * np.sin(delta) + m * vy * omega)
+    dvx = (1 / m) * (Fi -Ff * np.sin(delta) + m * vy * omega)
     dvy = (1 / m) * (Ff * np.cos(delta) + Fr - m * vx * omega)
     domega = (1 / Iz) * (Ff * lf * np.cos(delta) - Fr * lr)
 

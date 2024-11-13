@@ -21,6 +21,8 @@ Pr_actual = 40000  # Example actual rear lateral force parameter
 Pf_init = 4000  # Initial guess for Pf
 Pr_init = 6000  # Initial guess for Pr
 
+Fi = 1000  # Example longitudinal force input
+
 theta = np.array([Pf_init, Pr_init])  # Initial parameter estimates
 P = np.eye(2) * 20  # Example covariance matrix
 
@@ -44,7 +46,7 @@ for k in range(len(tspan) - 1):
     omega_k = current_state[5]  # Yaw rate
 
     # Simulate vehicle dynamics for one step using current parameter estimates
-    state_next = odeint(vehicle_dynamics, current_state, [tspan[k], tspan[k+1]], args=(m, Iz, lf, lr, Pf_actual, Pr_actual, delta))
+    state_next = odeint(vehicle_dynamics, current_state, [tspan[k], tspan[k+1]], args=(m, Iz, lf, lr, Pf_actual, Pr_actual, Fi, delta))
     state_next = state_next[-1, :]  # Get the final state from odeint result
     
     # Update the state for the next iteration
