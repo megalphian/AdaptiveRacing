@@ -5,8 +5,8 @@ lf = 1.1;         % Distance from CG to front axle (m)
 lr = 1.6;         % Distance from CG to rear axle (m)
 
 % Initial guesses for unknown parameters
-Pf_initial = 40000;  % Initial guess for front tire lateral stiffness
-Pr_initial = 30000;  % Initial guess for rear tire lateral stiffness
+Pf_initial = 0;  % Initial guess for front tire lateral stiffness
+Pr_initial = 0;  % Initial guess for rear tire lateral stiffness
 
 Pf_actual = 60000;
 Pr_actual = 40000;
