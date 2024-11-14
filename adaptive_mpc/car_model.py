@@ -3,6 +3,10 @@ import numpy as np
 def vehicle_dynamics(state, t, m, Iz, lf, lr, Pf, Pr, Fi, delta):
     x, y, phi, vx, vy, omega = state
 
+    Fi_temp = Fi
+    if(Fi < 0 and vx < 0.01):
+        Fi_temp = 0
+
     # Slip angles calculation
     alpha_f = -np.arctan((vy + lf * omega) / vx) + delta
     alpha_r = np.arctan((-vy + lr * omega) / vx)
@@ -15,7 +19,7 @@ def vehicle_dynamics(state, t, m, Iz, lf, lr, Pf, Pr, Fi, delta):
     dx = vx * np.cos(phi) - vy * np.sin(phi)
     dy = vx * np.sin(phi) + vy * np.cos(phi)
     dphi = omega
-    dvx = (1 / m) * (Fi -Ff * np.sin(delta) + m * vy * omega)
+    dvx = (1 / m) * (Fi_temp -Ff * np.sin(delta) + m * vy * omega)
     dvy = (1 / m) * (Ff * np.cos(delta) + Fr - m * vx * omega)
     domega = (1 / Iz) * (Ff * lf * np.cos(delta) - Fr * lr)
 

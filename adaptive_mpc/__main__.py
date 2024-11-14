@@ -18,6 +18,14 @@ lr = 1.6  # Example distance from CG to rear axle
 Pf_actual = 5000  # Example actual front lateral force parameter
 Pr_actual = 6000  # Example actual rear lateral force parameter
 
+Pf_actual = np.zeros(len(tspan))
+Pf_actual[:int(100/dt)] = 5000
+Pf_actual[int(100/dt):] = 2000
+
+Pr_actual = np.zeros(len(tspan))
+Pr_actual[:int(100/dt)] = 6000
+Pr_actual[int(100/dt):] = 3000
+
 Pf_init = 100  # Initial guess for Pf
 Pr_init = 500  # Initial guess for Pr
 
@@ -30,7 +38,8 @@ Fi[int(100/dt):] = 1000
 delta = np.zeros(len(tspan))  # Example steering angle (constant)
 delta[:int(50/dt)] = 0.4  # Constant steering angle
 delta[int(50/dt):int(100/dt)] = 0.69  
-delta[int(100/dt):] = 0.2
+delta[int(100/dt):int(110/dt)] = -0.4
+delta[int(110/dt):] = 0.02
 
 # raise Exception('Stop here')
 
@@ -56,16 +65,24 @@ for k in range(len(tspan) - 1):
     Fi_k = Fi[k]  # Input force at time k
     delta_k = delta[k]  # Steering angle at time k
 
+    Pf_actual_k = Pf_actual[k]  # Actual front lateral force at time k
+    Pr_actual_k = Pr_actual[k]  # Actual rear lateral force at time k
+
     # Simulate vehicle dynamics for one step using current parameter estimates
-    state_next = odeint(vehicle_dynamics, current_state, [tspan[k], tspan[k+1]], args=(m, Iz, lf, lr, Pf_actual, Pr_actual, Fi_k, delta_k))
+    state_next = odeint(vehicle_dynamics, current_state, [tspan[k], tspan[k+1]], args=(m, Iz, lf, lr, Pf_actual_k, Pr_actual_k, Fi_k, delta_k))
     state_next = state_next[-1, :]  # Get the final state from odeint result
     
     # Update the state for the next iteration
     current_state = state_next
     
-    # Calculate the slip angles based on current state
-    alpha_f_k = -np.arctan((vy_k + lf * omega_k) / vx_k) + delta_k
-    alpha_r_k = np.arctan((-vy_k + lr * omega_k) / vx_k)
+    if vx_k <= 0:
+        alpha_f_k = 0
+        alpha_r_k = 0
+        print('Vehicle is not moving')
+    else:
+        # Calculate the slip angles based on current state
+        alpha_f_k = -np.arctan((vy_k + lf * omega_k) / vx_k) + delta_k
+        alpha_r_k = np.arctan((-vy_k + lr * omega_k) / vx_k)
     
     # Construct the regressor vector (phi_k)
     phi_k = np.array([alpha_f_k, alpha_r_k])
@@ -79,8 +96,10 @@ for k in range(len(tspan) - 1):
     omega_pred = (1/Iz) * (F_f_pred * lf * np.cos(delta_k) - F_r_pred * lr)
     
     # Assume that we can measure the force experienced by the tires
-    F_f_act = Pf_actual * alpha_f_k  # Add noise to the measurements
-    F_r_act = Pr_actual * alpha_r_k  # Add noise to the measurements
+    F_f_act = Pf_actual_k * alpha_f_k # Front lateral force
+    F_f_act += np.random.normal(0, abs(F_f_act*0.025))  # Add noise to the measurements
+    F_r_act = Pr_actual_k * alpha_r_k # Rear lateral force
+    F_r_act += np.random.normal(0, abs(F_r_act*0.025))  # Add noise to the measurements
 
     # Measurement (using both lateral velocity and yaw rate)
     y_meas = np.array([F_f_act, F_r_act])  # Actual measurements
