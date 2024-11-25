@@ -11,7 +11,10 @@ lr = 1.6  # Example distance from CG to rear axle
 
 P = np.eye(2) * 5  # Example covariance matrix
 
-def parameter_estimate(current_state,control_input,time,theta):
+Pf_actual_k = 5000  # Actual front lateral force at time k
+Pr_actual_k = 6000  # Actual rear lateral force at time k
+
+def parameter_estimate(current_state, control_input, dt, theta):
     # Extract measured outputs (vy and omega)
     vx_k = current_state[3]  # Longitudinal velocity
     vy_k = current_state[4]  # Lateral velocity
@@ -20,13 +23,8 @@ def parameter_estimate(current_state,control_input,time,theta):
     Fi_k = control_input[0]  # Input force at time k
     delta_k = control_input[1]  # Steering angle at time k
 
-    Pf_actual_k = 5000  # Actual front lateral force at time k
-    Pr_actual_k = 6000  # Actual rear lateral force at time k
-
     # Simulate vehicle dynamics for one step using current parameter estimates
-    state_next = vehicle_dynamics(current_state, 0.01, m, Iz, lf, lr, Pf_actual_k, Pr_actual_k, Fi_k, delta_k)
-    # state_next = odeint(vehicle_dynamics, current_state, [time, time + 0.01], args=(m, Iz, lf, lr, Pf_actual_k, Pr_actual_k, Fi_k, delta_k))
-    # state_next = state_next[-1, :]  # Get the final state from odeint result
+    state_next = vehicle_dynamics(current_state, dt, m, Iz, lf, lr, Pf_actual_k, Pr_actual_k, Fi_k, delta_k)
     
     # Update the state for the next iteration
     current_state = state_next
