@@ -7,19 +7,15 @@ def vehicle_dynamics(state, dt, m, Iz, lf, lr, Pf, Pr, Fi, delta):
     if(Fi < 0 and vx < 0.01):
         Fi_temp = 0
     
-    # Slip angles calculation
-    if(vx <= 1):
-        alpha_f = 0
-        alpha_r = 0
-    else:
-        alpha_f = -np.arctan((vy + lf * omega) / (vx)) + delta
-        alpha_r = np.arctan((-vy + lr * omega) / (vx))
+    small_value = 0.001
+    alpha_f = -np.arctan((vy + lf * omega) / (vx + small_value)) + delta
+    alpha_r = np.arctan((-vy + lr * omega) / (vx + small_value))
 
-    # Tire forces using Simplified Pacejka model
+    # # Tire forces using Simplified Pacejka model
     Ff = Pf * alpha_f  # Front lateral force
     Fr = Pr * alpha_r  # Rear lateral force
 
-    Ff_long = Fi_temp * np.cos(delta)
+    Ff_long = Fi_temp
 
     # Vehicle dynamics equations
     dx = vx * np.cos(phi) - vy * np.sin(phi)

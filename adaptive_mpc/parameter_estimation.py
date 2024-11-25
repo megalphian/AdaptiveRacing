@@ -11,8 +11,8 @@ lr = 1.6  # Example distance from CG to rear axle
 
 P = np.eye(2) * 5  # Example covariance matrix
 
-Pf_actual_k = 5000  # Actual front lateral force at time k
-Pr_actual_k = 6000  # Actual rear lateral force at time k
+Pf_actual_k = 0.85  # Actual front lateral force at time k
+Pr_actual_k = 0.55  # Actual rear lateral force at time k
 
 def parameter_estimate(current_state, control_input, dt, theta):
     # Extract measured outputs (vy and omega)
@@ -26,10 +26,7 @@ def parameter_estimate(current_state, control_input, dt, theta):
     # Simulate vehicle dynamics for one step using current parameter estimates
     state_next = vehicle_dynamics(current_state, dt, m, Iz, lf, lr, Pf_actual_k, Pr_actual_k, Fi_k, delta_k)
     
-    # Update the state for the next iteration
-    current_state = state_next
-    
-    if vx_k <= 0:
+    if vx_k <= 0.01:
         alpha_f_k = 0
         alpha_r_k = 0
         print('Vehicle is not moving')
@@ -45,10 +42,6 @@ def parameter_estimate(current_state, control_input, dt, theta):
     F_f_pred = theta[0] * alpha_f_k  # Front lateral force
     F_r_pred = theta[1] * alpha_r_k  # Rear lateral force
     
-    # Predict vy and omega using the dynamics equations
-    vy_pred = (1/m) * (F_f_pred * np.cos(delta_k) + F_r_pred - m * vx_k * omega_k)
-    omega_pred = (1/Iz) * (F_f_pred * lf * np.cos(delta_k) - F_r_pred * lr)
-    
     # Assume that we can measure the force experienced by the tires
     F_f_act = Pf_actual_k * alpha_f_k # Front lateral force
     F_f_act += np.random.normal(0, abs(F_f_act*0.025))  # Add noise to the measurements
@@ -62,6 +55,6 @@ def parameter_estimate(current_state, control_input, dt, theta):
     error = y_meas - y_pred
     theta_dot = P @ error * phi_k
     # Update parameter estimates
-    theta = theta + 0.01 * theta_dot
+    new_theta = theta + 0.01 * theta_dot
 
-    return theta
+    return new_theta, state_next
