@@ -97,9 +97,9 @@ for k in range(len(tspan) - 1):
     
     # Assume that we can measure the force experienced by the tires
     F_f_act = Pf_actual_k * alpha_f_k # Front lateral force
-    F_f_act += np.random.normal(0, abs(F_f_act*0.025))  # Add noise to the measurements
+    # F_f_act += np.random.normal(0, abs(F_f_act*0.025))  # Add noise to the measurements
     F_r_act = Pr_actual_k * alpha_r_k # Rear lateral force
-    F_r_act += np.random.normal(0, abs(F_r_act*0.025))  # Add noise to the measurements
+    # F_r_act += np.random.normal(0, abs(F_r_act*0.025))  # Add noise to the measurements
 
     # Measurement (using both lateral velocity and yaw rate)
     y_meas = np.array([F_f_act, F_r_act])  # Actual measurements
@@ -129,6 +129,7 @@ plt.plot(tspan, Pr_est)
 plt.title('Estimated Pr over Time')
 plt.xlabel('Time (s)')
 plt.ylabel('Pr (N/rad)')
+plt.tight_layout()
 
 plt.figure()
 plt.subplot(2, 1, 1)
@@ -146,6 +147,7 @@ plt.title('Rear Lateral Force')
 plt.xlabel('Time (s)')
 plt.ylabel('Force (N)')
 plt.legend()
+plt.tight_layout()
 
 plt.figure()
 plt.subplot(2, 1, 1)
@@ -159,5 +161,6 @@ plt.plot(tspan, delta)
 plt.title('Steering Angle')
 plt.xlabel('Time (s)')
 plt.ylabel('Angle (rad)')
+plt.tight_layout()
 
 plt.show()
