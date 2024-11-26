@@ -4,36 +4,26 @@ from vehicle_model import vehicle_dynamics
 
 from scipy.integrate import odeint
 
-m = 1500  # Example mass
-Iz = 3000  # Example moment of inertia
-lf = 1.2  # Example distance from CG to front axle
-lr = 1.6  # Example distance from CG to rear axle
+m=2.923
+Iz=0.0796
+lf=0.168
+lr=0.163
 
 P = np.eye(2) * 5  # Example covariance matrix
 
-Pf_actual_k = 0.85  # Actual front lateral force at time k
-Pr_actual_k = 0.55  # Actual rear lateral force at time k
+# Pf_actual_k = 2  # Actual front lateral force at time k
+# Pr_actual_k = 2  # Actual rear lateral force at time k
+
+Pf_actual_k = 5  # Actual front lateral force at time k
+Pr_actual_k = 5  # Actual rear lateral force at time k
 
 def parameter_estimate(current_state, control_input, dt, theta):
     # Extract measured outputs (vy and omega)
-    vx_k = current_state[3]  # Longitudinal velocity
-    vy_k = current_state[4]  # Lateral velocity
-    omega_k = current_state[5]  # Yaw rate
-
     Fi_k = control_input[0]  # Input force at time k
     delta_k = control_input[1]  # Steering angle at time k
 
     # Simulate vehicle dynamics for one step using current parameter estimates
-    state_next = vehicle_dynamics(current_state, dt, m, Iz, lf, lr, Pf_actual_k, Pr_actual_k, Fi_k, delta_k)
-    
-    if vx_k <= 0.01:
-        alpha_f_k = 0
-        alpha_r_k = 0
-        print('Vehicle is not moving')
-    else:
-        # Calculate the slip angles based on current state
-        alpha_f_k = -np.arctan((vy_k + lf * omega_k) / vx_k) + delta_k
-        alpha_r_k = np.arctan((-vy_k + lr * omega_k) / vx_k)
+    state_next, alpha_f_k, alpha_r_k = vehicle_dynamics(current_state, dt, m, Iz, lf, lr, Pf_actual_k, Pr_actual_k, Fi_k, delta_k)
     
     # Construct the regressor vector (phi_k)
     phi_k = np.array([alpha_f_k, alpha_r_k])
@@ -55,6 +45,6 @@ def parameter_estimate(current_state, control_input, dt, theta):
     error = y_meas - y_pred
     theta_dot = P @ error * phi_k
     # Update parameter estimates
-    new_theta = theta + 0.01 * theta_dot
+    new_theta = theta + 0.05 * theta_dot
 
     return new_theta, state_next

@@ -7,22 +7,20 @@ from draw import Draw_MPC_Obstacle, Draw_MPC_point_stabilization_v1
 import matplotlib.pyplot as plt
 
 m=2.923
-Iz= 0.0796
+Iz=0.0796
 lf=0.168
 lr=0.163
-Pf=0.85
-Pr=0.55
 
 T = 0.1                 # time step
-N = 20                  # horizon length
+N = 25                  # horizon length
 vx_max = 10.0             # linear velocity max
 vy_max = 2.0             # linear velocity max
 omega_max = np.pi   # angular velocity max
 u_max = 2.0               # force max of each direction
 steering_max = 0.4967
 
-Pf_init = 0.1  # Initial guess for Pf
-Pr_init = 0.1  # Initial guess for Pr
+Pf_init = 1  # Initial guess for Pf
+Pr_init = 1  # Initial guess for Pr
 
 theta_param = np.array([Pf_init, Pr_init])  # Initial parameter estimates
 
@@ -94,7 +92,7 @@ if __name__ == "__main__":
     opti.subject_to(opti.bounded(-u_max, u1, u_max))
     opti.subject_to(opti.bounded(-steering_max, u2, steering_max))
 
-    opts_setting = {'ipopt.max_iter': 1000,
+    opts_setting = {'ipopt.max_iter': 10000,
                         'ipopt.print_level': 0,  # Set higher for detailed output
                         'print_time': False,
                         'ipopt.acceptable_tol': 1e-6,
@@ -120,10 +118,11 @@ if __name__ == "__main__":
     mpciter = 0
     start_time = time.time()
     index_t = []
-    while(np.linalg.norm(current_state[:2] - final_state[:2]) > 0.1 and mpciter - sim_time/T < 0.0):
+    while(np.linalg.norm(current_state - final_state) > 0.15 and mpciter - sim_time/T < 0.0):
         # set parameter, here only update initial state of x (x0)
         opti.set_value(opt_x0, current_state)
-        opti.set_value(opt_Pf_Pr, theta_param)
+        # opti.set_value(opt_Pf_Pr, theta_param)
+        opti.set_value(opt_Pf_Pr, [0,0])
 
         # # # # set optimizing target withe init guess
         # opti.set_initial(opt_controls, u0)# (N, 3)
@@ -131,20 +130,25 @@ if __name__ == "__main__":
         
         # solve the problem once again
         print('theta_param: ', theta_param)
-        sol = opti.solve()
+
+        try:
+            sol = opti.solve()
+        except Exception as e:
+            print(e)
+            print('Exiting the loop as solver failed')
+            break
 
         # obtain the control input
         u_res = sol.value(opt_controls)
         u_c.append(u_res[0, :])
         next_states_pred = sol.value(opt_states)
 
-        theta_param, state_next  = parameter_estimate(current_state, u_res[0,:], T, theta_param)
-        print('state_next: ', state_next)
-
+        theta_param, state_next = parameter_estimate(current_state, u_res[0,:], T, theta_param)
+        
         # state_next = next_states_pred[1, :]
+        print('state_next: ', state_next)
         
         # # for next loop
-        # t0, current_state, u0, next_states = shift(T, t0, current_state, u_res, next_states_pred, car_model_np, theta_param)
         t0 += T
         t_c.append(t0)
         mpciter = mpciter + 1

@@ -29,4 +29,4 @@ def vehicle_dynamics(state, dt, m, Iz, lf, lr, Pf, Pr, Fi, delta):
     dstate = np.array([dx, dy, dphi, dvx, dvy, domega])
 
     new_state = state + dstate*dt
-    return new_state
+    return new_state, alpha_f, alpha_r
