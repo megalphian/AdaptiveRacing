@@ -121,8 +121,12 @@ if __name__ == "__main__":
     while(np.linalg.norm(current_state - final_state) > 0.15 and mpciter - sim_time/T < 0.0):
         # set parameter, here only update initial state of x (x0)
         opti.set_value(opt_x0, current_state)
-        # opti.set_value(opt_Pf_Pr, theta_param)
-        opti.set_value(opt_Pf_Pr, [0,0])
+        
+        ### ADD THIS LINE FOR ADAPTIVE MPC
+        opti.set_value(opt_Pf_Pr, theta_param)
+
+        ### ADD THIS LINE FOR VANILLA MPC
+        # opti.set_value(opt_Pf_Pr, [0,0])
 
         # # # # set optimizing target withe init guess
         # opti.set_initial(opt_controls, u0)# (N, 3)
