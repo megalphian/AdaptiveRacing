@@ -15,7 +15,7 @@ P = np.eye(2) * 5  # Example covariance matrix
 # Pr_actual_k = 2  # Actual rear lateral force at time k
 
 Pf_actual_k = 5  # Actual front lateral force at time k
-Pr_actual_k = 5  # Actual rear lateral force at time k
+Pr_actual_k = 4  # Actual rear lateral force at time k
 
 def parameter_estimate(current_state, control_input, dt, theta):
     # Extract measured outputs (vy and omega)

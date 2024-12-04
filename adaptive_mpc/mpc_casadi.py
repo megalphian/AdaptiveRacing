@@ -12,9 +12,9 @@ lf=0.168
 lr=0.163
 
 T = 0.1                 # time step
-N = 25                  # horizon length
+N = 45                  # horizon length
 vx_max = 10.0             # linear velocity max
-vy_max = 2.0             # linear velocity max
+vy_max = 7.0             # linear velocity max
 omega_max = np.pi   # angular velocity max
 u_max = 2.0               # force max of each direction
 steering_max = 0.4967
@@ -167,7 +167,8 @@ if __name__ == "__main__":
     draw_result = Draw_MPC_point_stabilization_v1(rob_diam=0.3,
                                                 init_state=init_state,
                                                 target_state=final_state,
-                                                robot_states=np.array(xx))
+                                                robot_states=np.array(xx),
+                                                export_fig=True)
     
     # plot velocity values
     fig, ax = plt.subplots()
@@ -177,4 +178,6 @@ if __name__ == "__main__":
     ax.legend()
     ax.grid()
 
-    plt.show()
+    fig.savefig('velocity_values.png')
+
+    # plt.show()
